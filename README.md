@@ -121,43 +121,70 @@ To push the Docker image to Docker Hub, you need to set up secrets in your GitHu
 ### Example CI/CD Workflow File (`ci_cd.yaml`)
 
 ```yaml
-name: Build, Test, and Deploy to Docker Hub
+name: CI/CD for Dockerized Flask App
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  build-test-deploy:
+  dockerbuild:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build The Docker Image
+      run: docker build . --file DockerFile --tag workflow-test:$(date +%s)
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v2
+    - name: Set up Python
+      uses: actions/setup-python@v4
       with:
         python-version: '3.9'
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        pip install flask
+        pip install pytest
 
-    - name: Run unit tests
+    - name: Run tests
       run: |
         pytest
 
-    - name: Log in to Docker Hub
-      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+  build-and-publish:
+    needs: build-and-test
+    runs-on: ubuntu-latest
 
-    - name: Build and tag Docker image
-      run: docker build . -t ${{ secrets.DOCKER_USERNAME }}/flask-app:${{ github.sha }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-    - name: Push Docker image to Docker Hub
-      run: docker push ${{ secrets.DOCKER_USERNAME }}/flask-app:${{ github.sha }}
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        file: ./DockerFile
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/flasktest-app:latest
+
+    - name: Image digest
+      run: echo ${{ steps.build-and-publish.outputs.digest }}
 ```
 
 ## How to Run
