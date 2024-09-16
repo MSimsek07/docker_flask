@@ -66,6 +66,7 @@ Ensure you have the following installed:
 
 2. **Install Dependencies**:
    Ensure you have a Python virtual environment set up:
+   (I personally prefer anaconda for setting up my dev environments)
    ```bash
    python3 -m venv venv
    source venv/bin/activate  # For Linux/Mac
@@ -202,8 +203,8 @@ jobs:
 4. **Run the Docker Image**:
    Once the image is pushed to Docker Hub, you can pull and run it locally:
    ```bash
-   docker pull <DOCKER_USERNAME>/flask-app:<GIT_COMMIT_SHA>
-   docker run -p 5000:5000 <DOCKER_USERNAME>/flask-app:<GIT_COMMIT_SHA>
+   docker pull dockersimsek/flasktest-app:latest
+   docker run -p 5000:5000 dockersimsek/flasktest-app:latest
    ```
 
 ## Contact
