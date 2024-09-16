@@ -70,7 +70,7 @@ Ensure you have the following installed:
    python3 -m venv venv
    source venv/bin/activate  # For Linux/Mac
    # or
-   venv\Scriptsctivate  # For Windows
+   venv\ScriptsActivate  # For Windows
    ```
 
    Then install the dependencies:
